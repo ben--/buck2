@@ -10,6 +10,8 @@ def _execution_platform_impl(ctx: AnalysisContext) -> list[Provider]:
     constraints = dict()
     constraints.update(ctx.attrs.cpu_configuration[ConfigurationInfo].constraints)
     constraints.update(ctx.attrs.os_configuration[ConfigurationInfo].constraints)
+    if ctx.attrs.cpp_stdlib_configuration:
+        constraints.update(ctx.attrs.cpp_stdlib_configuration[ConfigurationInfo].constraints)
     cfg = ConfigurationInfo(constraints = constraints, values = {})
 
     name = ctx.label.raw_target()
@@ -34,6 +36,7 @@ execution_platform = rule(
     impl = _execution_platform_impl,
     attrs = {
         "cpu_configuration": attrs.dep(providers = [ConfigurationInfo]),
+        "cpp_stdlib_configuration": attrs.option(attrs.dep(providers = [ConfigurationInfo]), default = None),
         "os_configuration": attrs.dep(providers = [ConfigurationInfo]),
         "use_windows_path_separators": attrs.bool(),
     },
@@ -61,7 +64,19 @@ def _host_os_configuration() -> str:
     else:
         return "prelude//os:linux"
 
+def _host_cpp_stdlib_configuration() -> str:
+    os = host_info().os
+    # macOS defaults to libc++
+    if os.is_macos:
+        return "prelude//cpp:libc++"
+    # For other platforms, default to libstdc++
+    # (Windows and Linux both default to libstdc++ - on Windows this represents
+    # the general C++ stdlib concept, on Linux it's typically the actual libstdc++)
+    else:
+        return "prelude//cpp:libstdc++"
+
 host_configuration = struct(
     cpu = _host_cpu_configuration(),
     os = _host_os_configuration(),
+    cpp_stdlib = _host_cpp_stdlib_configuration(),
 )
