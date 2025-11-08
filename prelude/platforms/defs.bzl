@@ -12,6 +12,8 @@ def _execution_platform_impl(ctx: AnalysisContext) -> list[Provider]:
     constraints.update(ctx.attrs.os_configuration[ConfigurationInfo].constraints)
     if ctx.attrs.cpp_stdlib_configuration:
         constraints.update(ctx.attrs.cpp_stdlib_configuration[ConfigurationInfo].constraints)
+    if ctx.attrs.distro_configuration:
+        constraints.update(ctx.attrs.distro_configuration[ConfigurationInfo].constraints)
     cfg = ConfigurationInfo(constraints = constraints, values = {})
 
     name = ctx.label.raw_target()
@@ -37,6 +39,7 @@ execution_platform = rule(
     attrs = {
         "cpu_configuration": attrs.dep(providers = [ConfigurationInfo]),
         "cpp_stdlib_configuration": attrs.option(attrs.dep(providers = [ConfigurationInfo]), default = None),
+        "distro_configuration": attrs.option(attrs.dep(providers = [ConfigurationInfo]), default = None),
         "os_configuration": attrs.dep(providers = [ConfigurationInfo]),
         "use_windows_path_separators": attrs.bool(),
     },
@@ -75,8 +78,15 @@ def _host_cpp_stdlib_configuration() -> str:
     else:
         return "prelude//cpp:libstdc++"
 
+def _host_distro_configuration() -> str | None:
+    # Check if running in a conda environment
+    if read_root_config("env", "CONDA_PREFIX"):
+        return "prelude//distro:conda"
+    return None
+
 host_configuration = struct(
     cpu = _host_cpu_configuration(),
     os = _host_os_configuration(),
     cpp_stdlib = _host_cpp_stdlib_configuration(),
+    distro = _host_distro_configuration(),
 )
