@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+      - oss-folly-constraints
+  workflow_dispatch:
 
 jobs:
   set_version_info:
