@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+      - oss-folly-demo
+  workflow_dispatch:
 
 jobs:
   set_version_info:
@@ -29,7 +31,7 @@ jobs:
       prelude_hash: ${{ steps.get_latest_prelude_hash.outputs.prelude_hash }}
     steps:
       - name: Shallow clone buck2-prelude
-        run: git clone --depth=1 https://github.com/facebook/buck2-prelude
+        run: git clone --depth=1 --branch oss-folly https://github.com/ben--/buck2-prelude
       - name: Get latest commit hash into prelude_hash
         id: get_latest_prelude_hash
         run: |
@@ -51,30 +53,30 @@ jobs:
       fail-fast: false
       matrix:
         target:
-          - os: 'ubuntu-22.04'
-            triple: 'aarch64-unknown-linux-gnu'
+          - os: "ubuntu-22.04"
+            triple: "aarch64-unknown-linux-gnu"
             cross: true
-          - os: 'ubuntu-22.04'
-            triple: 'aarch64-unknown-linux-musl'
+          - os: "ubuntu-22.04"
+            triple: "aarch64-unknown-linux-musl"
             cross: true
-          - os: 'ubuntu-22.04'
-            triple: 'x86_64-unknown-linux-gnu'
-          - os: 'ubuntu-22.04'
-            triple: 'x86_64-unknown-linux-musl'
+          - os: "ubuntu-22.04"
+            triple: "x86_64-unknown-linux-gnu"
+          - os: "ubuntu-22.04"
+            triple: "x86_64-unknown-linux-musl"
             cross: true
-          - os: 'ubuntu-22.04'
-            triple: 'riscv64gc-unknown-linux-gnu'
+          - os: "ubuntu-22.04"
+            triple: "riscv64gc-unknown-linux-gnu"
             cross: true
-          - os: 'macos-15'
-            triple: 'aarch64-apple-darwin'
+          - os: "macos-15"
+            triple: "aarch64-apple-darwin"
             cross: true
-          - os: 'macos-15'
-            triple: 'x86_64-apple-darwin'
-          - os: 'windows-2022'
-            triple: 'x86_64-pc-windows-msvc'
+          - os: "macos-15"
+            triple: "x86_64-apple-darwin"
+          - os: "windows-2022"
+            triple: "x86_64-pc-windows-msvc"
             is_windows: true
-          - os: 'windows-11-arm'
-            triple: 'aarch64-pc-windows-msvc'
+          - os: "windows-11-arm"
+            triple: "aarch64-pc-windows-msvc"
             is_windows: true
     runs-on: ${{ matrix.target.os }}
 
@@ -85,8 +87,8 @@ jobs:
       - uses: SebRollen/toml-action@v1.0.2
         id: read_rust_toolchain
         with:
-          file: 'rust-toolchain'
-          field: 'toolchain.channel'
+          file: "rust-toolchain"
+          field: "toolchain.channel"
       - uses: dtolnay/rust-toolchain@v1
         with:
           toolchain: ${{ steps.read_rust_toolchain.outputs.value }}
@@ -254,29 +256,29 @@ jobs:
     needs:
       - build
     steps:
-    - name: Checkout
-      uses: actions/checkout@v6
-    - name: Download Buck2
-      uses: actions/download-artifact@v7
-      with:
-        name: buck2-x86_64-unknown-linux-gnu
-        path: artifacts
-    - name: Decompress Buck2
-      run: |
-        zstd -d artifacts/buck2-x86_64-unknown-linux-gnu.zst -o artifacts/buck2-release
-        chmod +x artifacts/buck2-release
-    - name: Install dependencies
-      run: |
-        sudo apt-get install -y yarn
-      id: build
-    - name: Build the Website
-      run: |
-        cd website
-        yarn
-        BUCK2_BIN="$GITHUB_WORKSPACE/artifacts/buck2-release" yarn build_prebuilt
-    - name: Deploy
-      uses: JamesIves/github-pages-deploy-action@v4
-      with:
-        branch: gh-pages # The branch the action should deploy to.
-        folder: website/build # The folder the action should deploy.
-        single-commit: true # Discard history for the gh-pages branch.
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Download Buck2
+        uses: actions/download-artifact@v7
+        with:
+          name: buck2-x86_64-unknown-linux-gnu
+          path: artifacts
+      - name: Decompress Buck2
+        run: |
+          zstd -d artifacts/buck2-x86_64-unknown-linux-gnu.zst -o artifacts/buck2-release
+          chmod +x artifacts/buck2-release
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -y yarn
+        id: build
+      - name: Build the Website
+        run: |
+          cd website
+          yarn
+          BUCK2_BIN="$GITHUB_WORKSPACE/artifacts/buck2-release" yarn build_prebuilt
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages # The branch the action should deploy to.
+          folder: website/build # The folder the action should deploy.
+          single-commit: true # Discard history for the gh-pages branch.
