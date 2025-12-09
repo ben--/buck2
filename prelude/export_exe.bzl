@@ -124,7 +124,7 @@ _export_exe = rule(
     attrs = {
         "exe": attrs.option(attrs.arg(), default = None, doc = "arg which should evaluate to a path to an executable binary"),
         "resources": attrs.list(attrs.source(), default = [], doc = "Additional artifacts to materialize alongside the executable (for Remote Execution)"),
-        "src": attrs.option(attrs.source(), default = None, doc = "path to an executable binary relative to this package"),
+        "src": attrs.option(attrs.one_of(attrs.source(), attrs_set(attrs.source())), default = None, doc = "path to an executable binary relative to this package"),
     },
 )
 
