@@ -5,8 +5,15 @@ on:
   workflow_dispatch: # allows manual triggering
 jobs:
   linux-build-and-test:
-    runs-on: 4-core-ubuntu
+    runs-on: ubuntu-latest
     steps:
+    - name: Maximize build space
+      uses: easimon/maximize-build-space@master
+      with:
+        remove-dotnet: 'true'
+        remove-android: 'true'
+        remove-codeql: 'true'
+        remove-docker-images: 'true'
     - uses: actions/checkout@v6
     - uses: ./.github/actions/setup_linux_env
     - uses: ./.github/actions/build_debug
@@ -22,7 +29,7 @@ jobs:
     - uses: ./.github/actions/build_debug
     - uses: ./.github/actions/run_test_py
   windows-build-and-test:
-    runs-on: windows-8-core
+    runs-on: windows-latest
     steps:
     - uses: actions/checkout@v6
     - uses: ./.github/actions/setup_windows_env
