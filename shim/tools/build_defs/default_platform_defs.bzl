@@ -9,6 +9,7 @@
 DEVSERVER_PLATFORM_REGEX = "UNUSED"
 ANDROID = "Android"
 APPLE = "Apple"
+APPLETVOS = "AppleTVOS"
 CXX = "Default"
 FBCODE = "Fbcode"
 IOS = "ios"
@@ -18,7 +19,7 @@ WINDOWS = "Windows"
 
 def get_available_platforms():
     if native.host_info().os.is_macos:
-        return (CXX, ANDROID, APPLE)
+        return (CXX, ANDROID, APPLE, APPLETVOS)
     if native.host_info().os.is_windows:
         return (CXX, ANDROID, WINDOWS)
     return (CXX, ANDROID)
